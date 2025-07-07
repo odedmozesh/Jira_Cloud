@@ -40,7 +40,7 @@ AP.context.getContext(async function (context) {
 
       console.log("📦 Payload:", payload);
       alert("📦 Payload:", payload);
-
+      
       const res = await fetch(webhookUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -49,4 +49,14 @@ AP.context.getContext(async function (context) {
 
       if (res.ok) {
         document.getElementById("msg").textContent = "✅ Email sent.";
-        document.getElementById("error
+        document.getElementById("error").textContent = "";
+      } else {
+        document.getElementById("error").textContent = "❌ Failed to send: " + res.status;
+        document.getElementById("msg").textContent = "";
+      }
+    };
+  } catch (e) {
+    console.error("❌ Error fetching issue:", e);
+    document.getElementById("error").textContent = `❌ ${e}`;
+  }
+});
