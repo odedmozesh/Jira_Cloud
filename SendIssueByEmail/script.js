@@ -1,10 +1,12 @@
 (function waitForAP() {
   if (typeof AP === 'undefined') {
+    console.log("🔍 AP waitForAP");
     // Wait until AP is available
     setTimeout(waitForAP, 100);
     return;
   }
 
+  console.log("🔍 AP context outofgetContext :", context);
   AP.context.getContext(async function (context) {
     console.log("🔍 AP context:", context);
     alert("🔍 AP context: " + JSON.stringify(context, null, 2));
