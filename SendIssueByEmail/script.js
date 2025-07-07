@@ -1,6 +1,7 @@
 AP.context.getContext(async function (context) {
   console.log("🔍 AP context:", context);
-  alert("🔍 AP context:", context);
+  alert("🔍 AP context: " + JSON.stringify(context, null, 2));
+
 
   const issueKey = context?.jira?.issue?.key;
 
@@ -39,7 +40,8 @@ AP.context.getContext(async function (context) {
       };
 
       console.log("📦 Payload:", payload);
-      alert("📦 Payload:", payload);
+      alert("🔍 AP context: " + JSON.stringify(payload, null, 2));
+
       
       const res = await fetch(webhookUrl, {
         method: "POST",
