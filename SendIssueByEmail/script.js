@@ -25,7 +25,10 @@ AP.dialog.getCustomData(async function (data) {
           secret: webhookSecret,
           issue: { key: issueKey, summary: issue.fields.summary }
         };
-  
+
+        console.log(`payload {payload}`) 
+        console.log(`payload $payload`) 
+          
         const res = await fetch(webhookUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
