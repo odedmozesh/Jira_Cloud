@@ -1,19 +1,92 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <!-- Use raw GitHub link for CSS -->
-    <link rel="stylesheet" href="https://raw.githubusercontent.com/odedmozesh/Jira_Cloud/main/styles.css" />
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        padding: 10px;
+      }
+      ul {
+        padding-left: 20px;
+      }
+      #msg {
+        color: green;
+      }
+      #error {
+        color: red;
+      }
+    </style>
   </head>
   <body>
-    <h2>Issue: <span id="issueKey"></span></h2>
-    <p><strong>Summary:</strong> <span id="summary"></span></p>
+    <h3>Issue: <span id="issueKey">...</span></h3>
+    <p><strong>Summary:</strong> <span id="summary">Loading...</span></p>
     <p><strong>Linked Issues:</strong></p>
     <ul id="linkedIssues"></ul>
     <button id="sendEmailBtn">📧 Send Email</button>
-    <p id="msg" style="color: green;"></p>
-    <p id="error" style="color: red;"></p>
+    <p id="msg"></p>
+    <p id="error"></p>
 
-    <!-- Use raw GitHub link for JS -->
-    <script src="https://raw.githubusercontent.com/odedmozesh/Jira_Cloud/main/script.js"></script>
+    <script>
+      AP.context.getContext(async function (context) {
+        const issueKey = context?.jira?.issue?.key;
+
+        if (!issueKey) {
+          document.getElementById("error").textContent = "❌ Issue key not found.";
+          return;
+        }
+
+        try {
+          const res = await fetch("/rest/api/3/issue/" + issueKey + "?fields=summary,issuelinks");
+          if (!res.ok) throw new Error("Issue fetch failed: " + res.status);
+
+          const issue = await res.json();
+
+          document.getElementById("issueKey").textContent = issueKey;
+          document.getElementById("summary").textContent = issue.fields.summary || "(no summary)";
+
+          const list = document.getElementById("linkedIssues");
+          (issue.fields.issuelinks || []).forEach(link => {
+            const linked = link.inwardIssue || link.outwardIssue;
+            if (linked) {
+              const li = document.createElement("li");
+              li.textContent = `${link.type.name}: ${linked.key}`;
+              list.appendChild(li);
+            }
+          });
+
+          document.getElementById("sendEmailBtn").onclick = async () => {
+            const payload = {
+              secret: "your-secret",
+              issue: {
+                key: issueKey,
+                summary: issue.fields.summary
+              }
+            };
+
+            console.log("Payload:", payload);
+
+            const webhookUrl = "https://api.atlassian.com/automation/webhooks/jira/your-cloud-id/webhook-id";
+
+            const sendRes = await fetch(webhookUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+            });
+
+            if (sendRes.ok) {
+              document.getElementById("msg").textContent = "✅ Email sent successfully.";
+              document.getElementById("error").textContent = "";
+            } else {
+              document.getElementById("error").textContent = "❌ Failed to send email: " + sendRes.status;
+              document.getElementById("msg").textContent = "";
+            }
+          };
+        } catch (e) {
+          document.getElementById("error").textContent = `❌ ${e}`;
+        }
+      });
+    </script>
   </body>
 </html>
